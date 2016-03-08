@@ -5,7 +5,7 @@
       float: left;
       border: #000 solid 5px;
       font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
-      font-size: 16px;
+      font-size: 12px;
       color: #f0f0f0;
       background: #000;
     }
@@ -23,14 +23,27 @@
     $(function() {
         
         var term = new Terminal({
-            cols: 80,
-            rows: 24,
+            cols: 160,
+            rows: 40,
             screenKeys: true
         });
 
         term.open(document.body);
         
-        var player = new TTYPlay(term, { url: 'test.tty.gz', speed:3, max_frame:500 });
+        var player = new TTYPlay(term,
+                {
+                    url: 'example.tty.gz',
+                    speed: 2,
+                    max_frame: 1500,
+                    onFinished: function() {
+                        //play again one finished
+                        player.reset(0);
+                        player.play();
+                    },
+                    onFrame: function(idx) {
+                        $("#index").val(idx)
+                    }
+                });
         
         $("#stop").click(function() {
             player.stop();
@@ -73,6 +86,7 @@
     <input type="button" id="stop" value="Pause">
     <input type="button" id="step" value="Step">
     <input type="button" id="play" value="Play">
+    <input type="text" id="index" value="0">
   </div>
 </body>
 </html>

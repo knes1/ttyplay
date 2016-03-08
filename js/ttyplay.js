@@ -8,6 +8,8 @@
  *    speed - speed multiplier.  (i.e. speed=2 means to play twice as fast)
  *    max_frame - cap the playback delay for a frame in milliseconds
  *    err - function for callback for errors.
+ *    onFrame - callback function on each frame, frame index is passed as a parameter
+ *    onFinished - function for callback when playback has reached the end
  *  
  * Depends upon an external TERM (i.e. https://github.com/chjj/term.js/)
  * Optionally decompresses gzipped TTY rec files using pako.
@@ -26,6 +28,8 @@ var TTYPlay = function (term, opts) {
     var index = 0;
     var speed = opts.speed || 1;
     var max_frame = opts.max_frame || 1000;
+    var onFinished = opts.onFinished || function() {};
+    var onFrame = opts.onFrame || function() {};
 
     function parse(res) {
         data = new DataView(res);
@@ -61,6 +65,7 @@ var TTYPlay = function (term, opts) {
     }
 
     function step() {
+        onFrame(index);
         var current = frames[index];
         if (!current) return;
 
@@ -83,8 +88,16 @@ var TTYPlay = function (term, opts) {
             delay = delay/speed;
             delay = delay>max_frame? max_frame : delay;
             timeout = window.setTimeout(play, delay);
+        } else {
+            stop();
+            onFinished();
         }
-    };
+    }
+
+    function reset(newIndex) {
+        index = newIndex;
+    }
+
 
     function stop() {
         // stop playback
@@ -110,6 +123,7 @@ var TTYPlay = function (term, opts) {
         parse: parse,
         play: play,
         step: step,
+        reset: reset,
         stop: stop
     };
 };
